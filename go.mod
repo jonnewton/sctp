@@ -1,4 +1,4 @@
-module github.com/jonewton/sctp
+module github.com/jonnewton/sctp
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
