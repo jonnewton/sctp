@@ -450,16 +450,17 @@ loop:
 	for {
 		rawPackets := a.gatherOutbound()
 
-		//send the raw packet back to the callback if it exists.
-		if a.PktCallback!=nil {
-			p:=new(Packet)
-			p.Timestamp=time.Now().UnixNano()
-			p.Direction=true
-			p.Packet=raw
-			*a.PktCallback <- p
-		}
-
 		for _, raw := range rawPackets {
+
+			//send the raw packet back to the callback if it exists.
+			if a.PktCallback!=nil {
+				p:=new(Packet)
+				p.Timestamp=time.Now().UnixNano()
+				p.Direction=true
+				p.Packet=raw
+				*a.PktCallback <- p
+			}
+
 			_, err := a.netConn.Write(raw)
 			if err != nil {
 				if err != io.EOF {
