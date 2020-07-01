@@ -85,6 +85,13 @@ func getAssociationStateString(a uint32) string {
 	}
 }
 
+// Struct to hold raw packet bytes to be sent to a callback channel
+type Packet struct{ 
+	Direction bool
+	Packet []byte
+	Timestamp int64
+}
+
 // Association represents an SCTP association
 // 13.2.  Parameters Necessary per Association (i.e., the TCB)
 // Peer        : Tag value to be sent in every packet and is received
@@ -105,6 +112,8 @@ func getAssociationStateString(a uint32) string {
 type Association struct {
 	bytesReceived uint64
 	bytesSent     uint64
+
+	PktCallback *chan *Packet //chan for the raw packet callback
 
 	lock sync.RWMutex
 
@@ -441,6 +450,15 @@ loop:
 	for {
 		rawPackets := a.gatherOutbound()
 
+		//send the raw packet back to the callback if it exists.
+		if a.PktCallback!=nil {
+			p:=new(Packet)
+			p.Timestamp=time.Now().UnixNano()
+			p.Direction=true
+			p.Packet=raw
+			*a.PktCallback <- p
+		}
+
 		for _, raw := range rawPackets {
 			_, err := a.netConn.Write(raw)
 			if err != nil {
@@ -495,6 +513,15 @@ func (a *Association) handleInbound(raw []byte) error {
 	if err := checkPacket(p); err != nil {
 		a.log.Warnf("[%s] failed validating packet %s", a.name, err)
 		return nil
+	}
+
+	//send the raw packet back to the callback if it exists.
+	if a.PktCallback!=nil {
+		p:=new(Packet)
+		p.Timestamp=time.Now().UnixNano()
+		p.Direction=false
+		p.Packet=raw
+		*a.PktCallback <- p
 	}
 
 	a.handleChunkStart(p)
