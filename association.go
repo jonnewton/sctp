@@ -318,6 +318,8 @@ func (a *Association) init(isClient bool) {
 		setSupportedExtensions(&init.chunkInitCommon)
 		a.storedInit = init
 
+		fmt.Printf("%+v\r\n",init)
+
 		err := a.sendInit()
 		if err != nil {
 			a.log.Errorf("[%s] failed to send init: %s", a.name, err.Error())
@@ -830,6 +832,10 @@ func setSupportedExtensions(init *chunkInitCommon) {
 	// An implementation supporting this (Supported Extensions Parameter)
 	// extension MUST list the ASCONF, the ASCONF-ACK, and the AUTH chunks
 	// in its INIT and INIT-ACK parameters.
+
+	//don't do any extensions as it may be that the fwd tsn extension is causing us issues.
+	return
+
 	init.params = append(init.params, &paramSupportedExtensions{
 		ChunkTypes: []chunkType{ctReconfig, ctForwardTSN},
 	})
@@ -890,7 +896,7 @@ func (a *Association) handleInit(p *packet, i *chunkInit) ([]*packet, error) {
 
 	initAck.params = []param{a.myCookie}
 
-	setSupportedExtensions(&initAck.chunkInitCommon)
+	setSupportedExtensions(&initAck.chunkInitCommon) 
 
 	outbound.chunks = []chunk{initAck}
 
