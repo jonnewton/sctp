@@ -731,7 +731,7 @@ func (a *Association) gatherOutbound() [][]byte {
 		rawPackets = a.gatherOutboundDataAndReconfigPackets(rawPackets)
 		rawPackets = a.gatherOutboundFrastRetransmissionPackets(rawPackets)
 		rawPackets = a.gatherOutboundSackPackets(rawPackets)
-		rawPackets = a.gatherOutboundForwardTSNPackets(rawPackets)
+		//rawPackets = a.gatherOutboundForwardTSNPackets(rawPackets)
 	}
 
 	return rawPackets
